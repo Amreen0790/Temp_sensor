@@ -59,6 +59,9 @@
     .on.green{background:#22c55e;box-shadow:0 0 12px #22c55e}
 
     .msg{min-height:40px;background:#0000000a;border:1px dashed var(--border);border-radius:12px;padding:10px 12px}
+
+    /* NEW: nudge RUN/STOP buttons to the right */
+    .buttons-offset{ padding-left:20px; } /* adjust 10–32px to taste */
   </style>
 </head>
 <body>
@@ -70,7 +73,7 @@
     </p>
 
     <div class="grid">
-      <!-- LEFT: Inputs + LEFT INDICATOR now in °C -->
+      <!-- LEFT: Inputs + LEFT INDICATOR (°C) -->
       <section class="card vstack">
         <div class="title">Inputs</div>
 
@@ -78,7 +81,6 @@
         <div class="row" style="align-items:flex-end">
           <input id="cSlider" type="range" class="vslider" min="0" max="100" value="25" orient="vertical" />
 
-          <!-- UPDATED: Indicator label & units in °C -->
           <div>
             <div class="label">Indicator (°C)</div>
             <div class="thermo" style="height:260px">
@@ -97,7 +99,8 @@
         <input id="setF" type="number" step="1" value="100"
                style="padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text);max-width:140px" />
 
-        <div class="row" style="margin-top:8px">
+        <!-- NEW: buttons shifted right -->
+        <div class="row buttons-offset" style="margin-top:8px">
           <button id="runBtn" class="btn primary">RUN</button>
           <button id="stopBtn" class="btn danger">SAFETY STOP</button>
         </div>
@@ -110,7 +113,7 @@
         <div class="digit" id="formulaExample">77.0 = 25 × 1.8 + 32</div>
       </section>
 
-      <!-- RIGHT: Indicators (still °F for comparison to setpoint) -->
+      <!-- RIGHT: Indicators (°F for comparison) -->
       <section class="card vstack">
         <div class="title">Indicators</div>
         <div class="row" style="align-items:flex-start;gap:24px">
