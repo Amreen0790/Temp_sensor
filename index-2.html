@@ -42,4 +42,130 @@
 <body>
   <div class="wrap">
     <h1>Temperature Safety App</h1>
-    <p class="muted">Convert <strong>°C → °F</strong>. If <code>°F &gt; Setpoint</code> → <strong>RED LED</strong> &amp; “P
+    <p class="muted">Convert <strong>°C → °F</strong>. If <code>°F &gt; Setpoint</code> → <strong>RED LED</strong> &amp; “Please turn OFF the system”. Otherwise → <strong>GREEN LED</strong> &amp; “System is safe”. Use <em>RUN</em> to monitor continuously; <em>SAFETY STOP</em> halts it.</p>
+
+    <div class="grid">
+      <!-- Controls -->
+      <section class="card vstack">
+        <div class="title">Inputs</div>
+        <label class="label">Temperature input (°C) — vertical slider with digital display</label>
+        <div class="row" style="gap:16px;align-items:flex-end">
+          <input id="cSlider" type="range" min="0" max="100" value="25" class="vslider" />
+          <div>
+            <div class="label">°C</div>
+            <div id="cVal" class="digit">25</div>
+          </div>
+        </div>
+
+        <label class="label">Set temperature (°F) — numeric control</label>
+        <input id="setF" type="number" step="1" value="100" style="padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text);max-width:140px" />
+
+        <div class="row" style="margin-top:8px">
+          <button id="runBtn" class="btn primary">RUN</button>
+          <button id="stopBtn" class="btn danger">SAFETY STOP</button>
+        </div>
+      </section>
+
+      <!-- Indicators & status -->
+      <section class="card vstack">
+        <div class="title">Indicators</div>
+        <div class="row" style="align-items:flex-start;gap:24px">
+          <div style="display:flex;gap:16px;align-items:center">
+            <div>
+              <div class="label">Current °F (thermometer)</div>
+              <div class="thermo">
+                <div id="mercury" class="mercury" style="height:0%"></div>
+                <div class="scale"><span>212°F</span><span>122°F</span><span>32°F</span></div>
+              </div>
+            </div>
+            <div>
+              <div class="label">Digital °F</div>
+              <div id="fVal" class="digit">77.0</div>
+              <div class="label" style="margin-top:8px">Setpoint °F</div>
+              <div id="spVal" class="digit">100</div>
+              <div class="leds" style="margin-top:14px">
+                <div id="ledRed" class="led red" aria-label="Red LED"></div>
+                <div id="ledGreen" class="led green" aria-label="Green LED"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="title" style="margin-top:8px">Message</div>
+        <div id="message" class="msg">System is safe</div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // Elements
+    const cSlider = document.getElementById('cSlider');
+    const cVal = document.getElementById('cVal');
+    const setF = document.getElementById('setF');
+    const spVal = document.getElementById('spVal');
+    const fVal = document.getElementById('fVal');
+    const mercury = document.getElementById('mercury');
+    const ledRed = document.getElementById('ledRed');
+    const ledGreen = document.getElementById('ledGreen');
+    const message = document.getElementById('message');
+    const runBtn = document.getElementById('runBtn');
+    const stopBtn = document.getElementById('stopBtn');
+
+    let timer = null;
+
+    // °C → °F
+    const cToF = (c) => c * 1.8 + 32;
+
+    // Update all indicators
+    function updateDisplays(){
+      const c = Number(cSlider.value);
+      const f = cToF(c);
+      const sp = Number(setF.value);
+
+      // digits
+      cVal.textContent = c.toFixed(0);
+      fVal.textContent = f.toFixed(1);
+      // show setpoint if that element exists (it does)
+      if (spVal) spVal.textContent = sp.toFixed(0);
+
+      // thermometer (clamped 32–212°F)
+      const minF = 32, maxF = 212;
+      const clamped = Math.max(minF, Math.min(maxF, f));
+      const pct = ((clamped - minF) / (maxF - minF)) * 100;
+      mercury.style.height = pct + '%';
+
+      // decision
+      const over = f > sp;
+      ledRed.classList.toggle('on', over);
+      ledGreen.classList.toggle('on', !over);
+      message.textContent = over ? 'Please turn OFF the system' : 'System is safe';
+    }
+
+    // Loop controls
+    function startLoop(){
+      if (timer) return;            // already running
+      updateDisplays();
+      timer = setInterval(updateDisplays, 200); // ~while loop
+      runBtn.textContent = 'RUNNING…';
+      runBtn.disabled = true;
+    }
+    function stopLoop(){
+      if (timer){ clearInterval(timer); timer = null; }
+      ledRed.classList.remove('on');
+      ledGreen.classList.remove('on');
+      message.textContent = 'Stopped';
+      runBtn.textContent = 'RUN';
+      runBtn.disabled = false;
+    }
+
+    // Events
+    cSlider.addEventListener('input', updateDisplays);
+    setF.addEventListener('input', updateDisplays);
+    runBtn.addEventListener('click', startLoop);
+    stopBtn.addEventListener('click', stopLoop);
+
+    // First paint
+    updateDisplays();
+  </script>
+</body>
+</html>
