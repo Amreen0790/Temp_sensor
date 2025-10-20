@@ -70,7 +70,7 @@
     </p>
 
     <div class="grid">
-      <!-- LEFT: Inputs + LEFT INDICATOR (mirrors the right thermometer) -->
+      <!-- LEFT: Inputs + LEFT INDICATOR now in °C -->
       <section class="card vstack">
         <div class="title">Inputs</div>
 
@@ -78,12 +78,12 @@
         <div class="row" style="align-items:flex-end">
           <input id="cSlider" type="range" class="vslider" min="0" max="100" value="25" orient="vertical" />
 
-          <!-- NEW: Left thermometer indicator (synced) -->
+          <!-- UPDATED: Indicator label & units in °C -->
           <div>
-            <div class="label">Left indicator (°F)</div>
+            <div class="label">Indicator (°C)</div>
             <div class="thermo" style="height:260px">
               <div id="leftMercury" class="mercury" style="height:0%"></div>
-              <div class="scale" style="font-size:11px"><span>212°F</span><span>122°F</span><span>32°F</span></div>
+              <div class="scale" style="font-size:11px"><span>100°C</span><span>50°C</span><span>0°C</span></div>
             </div>
           </div>
 
@@ -110,7 +110,7 @@
         <div class="digit" id="formulaExample">77.0 = 25 × 1.8 + 32</div>
       </section>
 
-      <!-- RIGHT: Indicators -->
+      <!-- RIGHT: Indicators (still °F for comparison to setpoint) -->
       <section class="card vstack">
         <div class="title">Indicators</div>
         <div class="row" style="align-items:flex-start;gap:24px">
@@ -148,8 +148,8 @@
     const setF    = document.getElementById('setF');
     const fVal    = document.getElementById('fVal');
     const spVal   = document.getElementById('spVal');
-    const mercury = document.getElementById('mercury');
-    const leftMercury = document.getElementById('leftMercury'); // NEW (left)
+    const mercury = document.getElementById('mercury');          // right (°F)
+    const leftMercury = document.getElementById('leftMercury');  // left (°C)
     const ledRed  = document.getElementById('ledRed');
     const ledGreen= document.getElementById('ledGreen');
     const message = document.getElementById('message');
@@ -159,11 +159,6 @@
 
     let timer = null;
     const cToF = (c) => c * 1.8 + 32;
-
-    function setThermo(heightPct){
-      mercury.style.height = heightPct + '%';
-      leftMercury.style.height = heightPct + '%'; // sync left indicator
-    }
 
     function updateDisplays(){
       const c  = Number(cSlider.value);
@@ -175,11 +170,16 @@
       fVal.textContent = f.toFixed(1);
       spVal.textContent = sp.toFixed(0);
 
-      // thermometer (clamped 32–212°F)
+      // LEFT indicator (°C scale 0–100)
+      const minC = 0, maxC = 100;
+      const pctC = ((Math.max(minC, Math.min(maxC, c)) - minC) / (maxC - minC)) * 100;
+      leftMercury.style.height = pctC + '%';
+
+      // RIGHT indicator (°F scale 32–212)
       const minF = 32, maxF = 212;
-      const clamped = Math.max(minF, Math.min(maxF, f));
-      const pct = ((clamped - minF) / (maxF - minF)) * 100;
-      setThermo(pct);
+      const clampedF = Math.max(minF, Math.min(maxF, f));
+      const pctF = ((clampedF - minF) / (maxF - minF)) * 100;
+      mercury.style.height = pctF + '%';
 
       // decision
       const over = f > sp;
